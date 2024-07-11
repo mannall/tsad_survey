@@ -3,7 +3,7 @@
 import numpy as np
 import pywt as wt
 
-from typing import Callable, List
+from typing import List
 from numpy.lib.stride_tricks import sliding_window_view
 from sklearn.covariance import EmpiricalCovariance
 
@@ -31,14 +31,14 @@ def multilevel_dwt(test_ts: np.ndarray, wavelet: str = "haar", mode: str = "peri
             ds_.append(d)
     return np.array(ls_), as_, ds_
 
-def reverse_windowing(test_ts: np.ndarray, window_length: int, full_length: int, reduction: Callable = np.mean, fill_value: float = np.nan) -> np.ndarray:
-    mapped = np.full(shape=(full_length, window_length), fill_value=fill_value)
+def reverse_windowing(test_ts: np.ndarray, window_length: int, full_length: int) -> np.ndarray:
+    mapped = np.full(shape=(full_length, window_length), fill_value=0)
     mapped[:len(test_ts), 0] = test_ts
 
     for w in range(1, window_length):
         mapped[:, w] = np.roll(mapped[:, 0], w)
 
-    return reduction(mapped, axis=1)
+    return np.sum(mapped, axis=1)
 
 def combine_alternating(xs, ys):
     for x, y in zip(xs, ys):
@@ -46,11 +46,12 @@ def combine_alternating(xs, ys):
         yield y
 
 class DWT_MLEAD_AD:
-    def __init__(self, start_level = 3, quantile_epsilon = 0.05, random_state = 42):
+    def __init__(self, start_level = 3, quantile_epsilon = 0.05):
+        self.time_aware = True
+        self.requires_training = False
+
         self.start_level: int = start_level
         self.quantile_epsilon: float = quantile_epsilon
-        self.random_state: int = random_state
-        np.random.seed(self.random_state)
 
     def score(self, test_ts: np.ndarray) -> np.ndarray:
         self.n = len(test_ts)
@@ -75,7 +76,7 @@ class DWT_MLEAD_AD:
 
             p = self._estimate_gaussian_likelihoods(level, x_view)
             a = self._mark_anomalous_windows(p)
-            xa = reverse_windowing(a, window_length=window_size, full_length=len(x), reduction=np.sum, fill_value=0)
+            xa = reverse_windowing(a, window_length=window_size, full_length=len(x))
             coef_anomaly_counts.append(xa)
 
         return self._push_anomaly_counts_down_to_points(coef_anomaly_counts)
@@ -92,7 +93,6 @@ class DWT_MLEAD_AD:
 
         # coefficients for time indices >n are excluded from anomaly point score
         p[int(p.size*(self.n / self.m))::] = 0
-
         return p
 
     def _mark_anomalous_windows(self, p: np.ndarray):
