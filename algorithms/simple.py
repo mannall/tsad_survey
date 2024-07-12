@@ -2,7 +2,9 @@
 
 import numpy as np
 from .utils import reverse_windowing
+from numpy.lib.stride_tricks import sliding_window_view
 
-class Simple_AD:
-    def score(self, X: np.ndarray) -> np.ndarray:
-        return reverse_windowing(np.std(np.diff(X, 2, axis=1), axis=1), X.shape[1])
+class SimpleAD:
+    def score(self, test_ts, window_size: int = 64) -> np.ndarray:
+        windowed_ts = sliding_window_view(np.diff(test_ts, 2),  window_size)
+        return reverse_windowing(np.std(windowed_ts, axis=1), window_size+2)

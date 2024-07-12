@@ -8,7 +8,7 @@ def normalise(scores: np.ndarray) -> np.ndarray:
         return np.zeros(len(scores))
     return (scores - np.min(scores))/ptp
 
-def reverse_windowing(scores: np.ndarray, window_size: int, normalise_scores: bool = True) -> np.ndarray:
+def reverse_windowing(scores: np.ndarray, window_size: int) -> np.ndarray:
     # compute begin and end indices of windows
     begins = np.array([list(range(scores.shape[0]))])
     ends = begins + window_size

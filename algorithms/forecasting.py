@@ -1,3 +1,0 @@
-# Linear Regression
-# RForest
-# XGBoost

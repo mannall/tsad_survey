@@ -5,11 +5,8 @@ import numpy as np
 
 from .utils import reverse_windowing
 
-class Matrix_Profile_AD():
+class MatrixProfileAD():
     def __init__(self, m: int = 100):
-        self.time_aware = True
-        self.requires_training = False
-
         self.m = m
 
     def score(self, test_ts: np.ndarray) -> np.ndarray:

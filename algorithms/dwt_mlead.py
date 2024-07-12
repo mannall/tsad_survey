@@ -45,11 +45,8 @@ def combine_alternating(xs, ys):
         yield x
         yield y
 
-class DWT_MLEAD_AD:
+class DWTMLEADAD:
     def __init__(self, start_level = 3, quantile_epsilon = 0.05):
-        self.time_aware = True
-        self.requires_training = False
-
         self.start_level: int = start_level
         self.quantile_epsilon: float = quantile_epsilon
 
